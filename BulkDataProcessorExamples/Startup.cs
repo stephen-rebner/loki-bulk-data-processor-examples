@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 namespace BulkDataProcessorExamples
 {
@@ -20,7 +21,9 @@ namespace BulkDataProcessorExamples
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddLokiBulkDataProcessor("Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true");
+            services.AddLokiBulkDataProcessor(
+                "Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true",
+                Assembly.GetExecutingAssembly());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
