@@ -1,4 +1,6 @@
 ﻿using Loki.BulkDataProcessor;
+using LokiBulkDataProcessorExamples.Models;
+using LokiBulkDataProcessorExamples.ObjectBuilder;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -13,40 +15,48 @@ namespace TestBulkProcssorApi.Controllers
     public class BullkProcessorController : Controller
     {
         private IBulkProcessor _bulkProcessor;
+        private BlogBuilder _blogBuilder;
+        private PostBuilder _postBuilder;
 
         public BullkProcessorController(IBulkProcessor bulkProcessor)
         {
             _bulkProcessor = bulkProcessor;
+            _blogBuilder = new BlogBuilder();
+            _postBuilder = new PostBuilder();
         }
 
-        [Route("Process")]
+        [Route("SavePostModels")]
         [HttpPost]
         public async Task<IActionResult> Insert(int items)
         {
-            var itemsToSave = new List<TestDbModel>();
-            var objectBuilder = new TestDbModelObjectBuilder();
+             var blog = _blogBuilder.CreateBlog()
+                .WithUrl("http://")
+                .Build();
+
+            await _bulkProcessor.SaveAsync(new [] { blog }, "Blogs");
+
+            var postsToSave = new List<Post>();
 
             for (var i = 1; i <= items; i++)
             {
-                var model = objectBuilder.WithBoolColumnValue(true)
-                    .WithDateColumnValue(DateTime.Now)
-                    .WithNullableBoolColumnValue(false)
-                    .WithNullableDateColumnValue(DateTime.Now)
-                    .WithStringColumnValue($"Item{i}")
+                var post = _postBuilder.CreatePost()
+                    .WithTitle($"Title{i}")
+                    .WithContent($"Content{i}")
+                    .WithBlogId(1)
                     .Build();
 
-                itemsToSave.Add(model);
+                postsToSave.Add(post);
             }
 
-            await _bulkProcessor.WithConnectionString("Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true")
-                .SaveAsync(itemsToSave, "TestDbModels");
+            await _bulkProcessor
+                .WithConnectionString("Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true")
+                .SaveAsync(postsToSave, "Posts");
 
             return Ok();
         }
 
 
-
-        [Route("SavePosts")]
+        [Route("SavePostsDataTable")]
         [HttpPost]
         public async Task<IActionResult> SavePosts(int items)
         {
