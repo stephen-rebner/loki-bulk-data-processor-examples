@@ -2,8 +2,8 @@
 
 This is a sample Asp.Net Core Web API solution, demonstrating how to use Loki Bulk Data Processor.
 
-In order to to run the API, the database needs to be created first using Entity Framework; to do this open up
-the package manger console, and type the following command:
+In order to to run the API, the database needs to be created first using Entity Framework. To do this open up
+the package manger console and type the following command:
 
 **Update-Database**
 
