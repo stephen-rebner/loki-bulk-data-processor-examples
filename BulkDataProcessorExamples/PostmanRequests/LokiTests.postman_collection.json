@@ -1,0 +1,135 @@
+{
+	"info": {
+		"_postman_id": "1201a27b-ee8c-4aa0-a3ec-855441a06b82",
+		"name": "LokiTests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SavePostModels",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostModels?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostModels"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SaveDomainModelsWithMapping",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostModels?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostModels"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SavePostModelsWithMapping",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostModelsWithMapping?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostModelsWithMapping"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SavePostDataTable",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostsDataTable?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostsDataTable"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SavePostsDataTableWithMapping",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostsDataTableWithMapping?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostsDataTableWithMapping"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
