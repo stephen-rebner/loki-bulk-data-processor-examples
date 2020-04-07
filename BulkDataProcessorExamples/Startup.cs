@@ -1,6 +1,8 @@
+using BulkDataProcessorExamples.EntityFramework;
 using Loki.BulkDataProcessor.DependancyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,9 +23,8 @@ namespace BulkDataProcessorExamples
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddLokiBulkDataProcessor(
-                "Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true",
-                Assembly.GetExecutingAssembly());
+            services.AddLokiBulkDataProcessor(Configuration.GetConnectionString("BlogsDb"), Assembly.GetExecutingAssembly());
+            services.AddDbContext<BlogDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("BlogsDb")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

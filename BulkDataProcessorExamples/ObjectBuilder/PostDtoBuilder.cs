@@ -2,35 +2,35 @@
 
 namespace LokiBulkDataProcessorExamples.ObjectBuilder
 {
-    public class PostBuilder
+    public class PostDtoBuilder
     {
-        private Post _post;
+        private PostDto _post;
 
-        public PostBuilder CreatePost()
+        public PostDtoBuilder CreatePost()
         {
-            _post = new Post();
+            _post = new PostDto();
             return this;
         }
 
-        public PostBuilder WithTitle(string title)
+        public PostDtoBuilder WithTitle(string title)
         {
             _post.Title = title;
             return this;
         }
 
-        public PostBuilder WithContent(string content)
+        public PostDtoBuilder WithContent(string content)
         {
             _post.Content = content;
             return this;
         }
 
-        public PostBuilder WithBlogId(int blogId)
+        public PostDtoBuilder WithBlogId(int blogId)
         {
             _post.BlogId = blogId;
             return this;
         }
 
-        public Post Build()
+        public PostDto Build()
         {
             return _post;
         }

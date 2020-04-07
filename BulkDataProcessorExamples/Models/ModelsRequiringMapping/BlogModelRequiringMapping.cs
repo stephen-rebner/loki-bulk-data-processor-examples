@@ -1,6 +1,6 @@
 ﻿namespace BulkDataProcessorExamples.Models.ModelsRequiringMapping
 {
-    public class BlogModelRequiringMapping
+    public class BlogDtoModelRequiringMapping
     {
         public string BlogUrl { get; set; }
     }

@@ -1,9 +1,10 @@
-﻿using BulkDataProcessorExamples.Models.ModelsRequiringMapping;
+﻿using BulkDataProcessorExamples.EntityFramework;
+using BulkDataProcessorExamples.Models;
+using BulkDataProcessorExamples.Models.ModelsRequiringMapping;
 using Loki.BulkDataProcessor;
 using LokiBulkDataProcessorExamples.Models;
 using LokiBulkDataProcessorExamples.ObjectBuilder;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
@@ -14,42 +15,39 @@ namespace TestBulkProcssorApi.Controllers
     public class BullkProcessorController : Controller
     {
         private IBulkProcessor _bulkProcessor;
-        private BlogBuilder _blogBuilder;
-        private PostBuilder _postBuilder;
+        private BlogDbContext _dbContext;
+        private PostDtoBuilder _postBuilder;
 
-        public BullkProcessorController(IBulkProcessor bulkProcessor)
+        public BullkProcessorController(IBulkProcessor bulkProcessor, BlogDbContext dbContext)
         {
             _bulkProcessor = bulkProcessor;
-            _blogBuilder = new BlogBuilder();
-            _postBuilder = new PostBuilder();
+            _dbContext = dbContext;
+            _postBuilder = new PostDtoBuilder();
         }
 
         [Route("SavePostModels")]
         [HttpPost]
         public async Task<IActionResult> SavePostsWithoutMapping(int items)
         {
-             var blog = _blogBuilder.CreateBlog()
-                .WithUrl("http://")
-                .Build();
+            // Create a Blog and save it to the db using EF
+             var blog = await CreateBlog("http://blog-models-test-without-mapping");
 
-            await _bulkProcessor.SaveAsync(new [] { blog }, "Blogs");
-
-            var postsToSave = new List<Post>();
+            // Create a list of PostDtos 
+            var postsDtosToSave = new List<PostDto>();
 
             for (var i = 1; i <= items; i++)
             {
                 var post = _postBuilder.CreatePost()
                     .WithTitle($"Title{i}")
                     .WithContent($"Content{i}")
-                    .WithBlogId(1)
+                    .WithBlogId(blog.Id)
                     .Build();
 
-                postsToSave.Add(post);
+                postsDtosToSave.Add(post);
             }
 
-            await _bulkProcessor
-                .WithConnectionString("Server=(local);Database=IntegrationTestsDb;Trusted_Connection=True;MultipleActiveResultSets=true")
-                .SaveAsync(postsToSave, "Posts");
+            // Call the Bulk Processor to save the data.
+            await _bulkProcessor.SaveAsync(postsDtosToSave, "Posts");
 
             return Ok();
         }
@@ -58,25 +56,56 @@ namespace TestBulkProcssorApi.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveModelsWithMapping(int items)
         {
-            var blog = new BlogModelRequiringMapping { BlogUrl = "http://blog-model-requiring-mapping" };
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-models-test-with-mapping");
 
-            await _bulkProcessor.SaveAsync(new[] { blog }, "Blogs");
-
-            var postsToSave = new List<PostModelRequiringMapping>();
+            // Create a list of Post Dtos which requires the PostDtoMapping located under mappings
+            var postsDtosToSave = new List<PostDtoModelRequiringMapping>();
 
             for (var i = 1; i <= items; i++)
             {
-                var post = new PostModelRequiringMapping
+                var post = new PostDtoModelRequiringMapping
                 {
                     PostTitle = $"Title For Post Requiring Mapping {i}",
                     PostContent = $"Content For Post Requiring Mapping {i}",
-                    SomeBlogId = 1
+                    SomeBlogId = blog.Id
                 };
 
-                postsToSave.Add(post);
+                postsDtosToSave.Add(post);
             }
 
-            await _bulkProcessor.SaveAsync(postsToSave, "Posts");
+            // Call the save method on the Bulk Processor 
+            await _bulkProcessor.SaveAsync(postsDtosToSave, "Posts");
+
+            return Ok();
+        }
+
+        [Route("SaveDomainModelsWithMapping")]
+        [HttpPost]
+        public async Task<IActionResult> SaveDomainModelsWithMapping(int items)
+        {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-domain-models-test-without-mapping");
+
+            // Create a list of Post Domain objects which requires the PostMapping located under mappings
+            var posts = new List<Post>();
+
+            for (var i = 1; i <= items; i++)
+            {
+                var post = new Post
+                {
+                    Title = $"Title {i}",
+                    Content = $"Content {i}",
+                    BlogId = blog.Id
+                };
+
+                posts.Add(post);
+            }
+
+            // Call the save method on the Bulk Processor 
+            // Note: unlike entity framework, the Id will not be brought back
+            // and neither will the full blog object. To do this would impact on the performance.
+            await _bulkProcessor.SaveAsync(posts, "Posts");
 
             return Ok();
         }
@@ -85,17 +114,10 @@ namespace TestBulkProcssorApi.Controllers
         [HttpPost]
         public async Task<IActionResult> SavePostsDataTable(int items)
         {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-data-table-test-without-mapping");
 
-            var blogTable = new DataTable();
-
-            blogTable.Columns.Add(new DataColumn("Url"));
-
-            var blogRow = blogTable.NewRow();
-            blogRow["Url"] = "A Url";
-            blogTable.Rows.Add(blogRow);
-
-            await _bulkProcessor.SaveAsync(blogTable, "Blogs");
-
+            // Create a data table with column names that match the column names on the database exactly
             var postsTable = new DataTable();
 
             postsTable.Columns.Add(new DataColumn("Title"));
@@ -107,11 +129,12 @@ namespace TestBulkProcssorApi.Controllers
                 var postRow = postsTable.NewRow();
                 postRow["Title"] = $"Post Data Table Title {i}";
                 postRow["Content"] = $"Post Data Table Content {i}";
-                postRow["BlogId"] = 1;
+                postRow["BlogId"] = blog.Id;
 
                 postsTable.Rows.Add(postRow);
             }
 
+            // Call the save method on the Bulk Processor 
             await _bulkProcessor.SaveAsync(postsTable, "Posts");
 
             return Ok();
@@ -121,19 +144,16 @@ namespace TestBulkProcssorApi.Controllers
         [HttpPost]
         public async Task<IActionResult> SavePostsDataTableUsingMapping(int items)
         {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-data-table-test-with-mapping");
 
-            var blogTable = new DataTable { TableName = "BlogDataTable" };
-
-            blogTable.Columns.Add(new DataColumn("BlogUrl"));
-
-            var blogRow = blogTable.NewRow();
-            blogRow["BlogUrl"] = "A Url";
-            blogTable.Rows.Add(blogRow);
-
-            await _bulkProcessor.SaveAsync(blogTable, "Blogs");
-
+            // Create a posts data table, giving the table name that matches 
+            // the SourceTableName property on the PostDataTableMapping class
+            // (located in the mappings folder)
             var postsTable = new DataTable { TableName = "PostDataTable" } ;
 
+            // A new columns which which the Source Columns on the 
+            // PostDataTableMapping class exactly. 
             postsTable.Columns.Add(new DataColumn("PostTitle"));
             postsTable.Columns.Add(new DataColumn("PostContent"));
             postsTable.Columns.Add(new DataColumn("SomeBlogId"));
@@ -143,56 +163,24 @@ namespace TestBulkProcssorApi.Controllers
                 var postRow = postsTable.NewRow();
                 postRow["PostTitle"] = $"Post Data Table Title Using Mapping {i}";
                 postRow["PostContent"] = $"Post Data Table Content Using Mapping {i}";
-                postRow["SomeBlogId"] = 1;
+                postRow["SomeBlogId"] = blog.Id;
 
                 postsTable.Rows.Add(postRow);
             }
 
+            // Call the save method on the Bulk Processor 
             await _bulkProcessor.SaveAsync(postsTable, "Posts");
 
             return Ok();
         }
 
-        [Route("IncorrectColumnTest")]
-        [HttpPost]
-        public async Task<IActionResult> IncorrectMappingTest(int items)
+        private async Task<Blog> CreateBlog(string url)
         {
-            var blogTable = new DataTable();
+            var blog = new Blog() { Url = url };
+            _dbContext.Add(blog);
+            await _dbContext.SaveChangesAsync();
 
-            blogTable.Columns.Add(new DataColumn("Url"));
-
-            var blogRow = blogTable.NewRow();
-            blogRow["Url"] = "A Url";
-            blogTable.Rows.Add(blogRow);
-
-            await _bulkProcessor.SaveAsync(blogTable, "Blogs");
-
-            var postsTable = new DataTable();
-
-            postsTable.Columns.Add(new DataColumn("title"));
-            postsTable.Columns.Add(new DataColumn("Content"));
-            postsTable.Columns.Add(new DataColumn("BlogId"));
-
-            for (var i = 1; i <= items; i++)
-            {
-                var postRow = postsTable.NewRow();
-                postRow["title"] = $"Post Data Table Title {i}";
-                postRow["Content"] = $"Post Data Table Content {i}";
-                postRow["BlogId"] = 1;
-
-                postsTable.Rows.Add(postRow);
-            }
-
-            try
-            {
-                await _bulkProcessor.SaveAsync(postsTable, "Posts");
-            }
-            catch(Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-
-            return Ok();
+            return blog;
         }
     }
 }

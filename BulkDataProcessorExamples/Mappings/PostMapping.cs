@@ -1,15 +1,15 @@
-﻿using BulkDataProcessorExamples.Models.ModelsRequiringMapping;
+﻿using BulkDataProcessorExamples.Models;
 using Loki.BulkDataProcessor.Mappings;
 
 namespace BulkDataProcessorExamples.Mappings
 {
-    public class PostMapping : ModelMapping<PostModelRequiringMapping>
+    public class PostMapping : ModelMapping<Post>
     {
         public PostMapping()
         {
-            Map(x => x.PostTitle).ToDestinationColumn("Title");
-            Map(x => x.PostContent).ToDestinationColumn("Content");
-            Map(x => x.SomeBlogId).ToDestinationColumn("BlogId");
+            Map(post => post.Title).ToDestinationColumn("Title");
+            Map(post => post.Content).ToDestinationColumn("Content");
+            Map(post => post.BlogId).ToDestinationColumn("BlogId");
         }
     }
 }

@@ -3,9 +3,9 @@ using Loki.BulkDataProcessor.Mappings;
 
 namespace BulkDataProcessorExamples.Mappings
 {
-    public class BlogMapping : ModelMapping<BlogModelRequiringMapping>
+    public class BlogDtoMapping : ModelMapping<BlogDtoModelRequiringMapping>
     {
-        public BlogMapping()
+        public BlogDtoMapping()
         {
             Map(x => x.BlogUrl).ToDestinationColumn("Url");
         }
