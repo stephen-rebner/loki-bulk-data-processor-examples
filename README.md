@@ -5,7 +5,7 @@ This is a sample Asp.Net Core Web API solution, demonstrating how to use Loki Bu
 In order to to run the API, the database needs to be created first using Entity Framework; to do this open up
 the package manger console, and type the following command:
 
-** Update-Database **
+**Update-Database**
 
 The easiest way to execute the Web API examples is to download Postman from https://www.postman.com/.
 
