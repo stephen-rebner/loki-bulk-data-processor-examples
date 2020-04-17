@@ -3,7 +3,6 @@ using BulkDataProcessorExamples.Models;
 using BulkDataProcessorExamples.Models.ModelsRequiringMapping;
 using Loki.BulkDataProcessor;
 using LokiBulkDataProcessorExamples.Models;
-using LokiBulkDataProcessorExamples.ObjectBuilder;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Data;
@@ -16,13 +15,11 @@ namespace TestBulkProcssorApi.Controllers
     {
         private IBulkProcessor _bulkProcessor;
         private BlogDbContext _dbContext;
-        private PostDtoBuilder _postBuilder;
 
         public BullkProcessorController(IBulkProcessor bulkProcessor, BlogDbContext dbContext)
         {
             _bulkProcessor = bulkProcessor;
             _dbContext = dbContext;
-            _postBuilder = new PostDtoBuilder();
         }
 
         [Route("SavePostModels")]
@@ -30,18 +27,19 @@ namespace TestBulkProcssorApi.Controllers
         public async Task<IActionResult> SavePostsWithoutMapping(int items)
         {
             // Create a Blog and save it to the db using EF
-             var blog = await CreateBlog("http://blog-models-test-without-mapping");
+            var blog = await CreateBlog("http://blog-models-test-without-mapping");
 
             // Create a list of PostDtos 
             var postsDtosToSave = new List<PostDto>();
 
             for (var i = 1; i <= items; i++)
             {
-                var post = _postBuilder.CreatePost()
-                    .WithTitle($"Title{i}")
-                    .WithContent($"Content{i}")
-                    .WithBlogId(blog.Id)
-                    .Build();
+                var post = new PostDto
+                {
+                    Title = $"Title{i}",
+                    Content = $"Content{i}",
+                    BlogId = blog.Id
+                };
 
                 postsDtosToSave.Add(post);
             }
