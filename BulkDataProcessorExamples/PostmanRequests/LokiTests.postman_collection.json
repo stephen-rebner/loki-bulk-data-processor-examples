@@ -31,6 +31,31 @@
 			"response": []
 		},
 		{
+			"name": "SaveDomainModelUsingEf",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostModels?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostModels"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "SaveDomainModelsWithMapping",
 			"request": {
 				"method": "POST",
@@ -119,6 +144,31 @@
 					"port": "44306",
 					"path": [
 						"SavePostsDataTableWithMapping"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SavePostModelsWithTransaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostModelsWithTransaction?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostModelsWithTransaction"
 					],
 					"query": [
 						{

@@ -4,8 +4,10 @@ using BulkDataProcessorExamples.Models.ModelsRequiringMapping;
 using Loki.BulkDataProcessor;
 using LokiBulkDataProcessorExamples.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace TestBulkProcssorApi.Controllers
@@ -15,11 +17,13 @@ namespace TestBulkProcssorApi.Controllers
     {
         private IBulkProcessor _bulkProcessor;
         private BlogDbContext _dbContext;
+        private IConfiguration _configuration;
 
-        public BullkProcessorController(IBulkProcessor bulkProcessor, BlogDbContext dbContext)
+        public BullkProcessorController(IBulkProcessor bulkProcessor, BlogDbContext dbContext, IConfiguration configuration)
         {
             _bulkProcessor = bulkProcessor;
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         [Route("SavePostModels")]
@@ -168,6 +172,47 @@ namespace TestBulkProcssorApi.Controllers
 
             // Call the save method on the Bulk Processor 
             await _bulkProcessor.SaveAsync(postsTable, "Posts");
+
+            return Ok();
+        }
+
+        [Route("SavePostModelsWithTransaction")]
+        [HttpPost]
+        public async Task<IActionResult> SavePostsWithTransaction(int items)
+        {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-models-test-without-mapping");
+
+            // Create a list of PostDtos 
+            var postsDtos = new List<PostDto>();
+
+            for (var i = 1; i <= items; i++)
+            {
+                var post = new PostDto
+                {
+                    Title = $"Title{i}",
+                    Content = $"Content{i}",
+                    BlogId = blog.Id
+                };
+
+                postsDtos.Add(post);
+            }
+
+            using (var sqlConnection = new SqlConnection(_configuration.GetConnectionString("BlogsDb")))
+            {
+                sqlConnection.Open();
+
+                using (var transaction = sqlConnection.BeginTransaction())
+                {
+                    _bulkProcessor.Transaction = transaction;
+
+                    // Call the save method on the Bulk Processor 
+                    await _bulkProcessor.SaveAsync(postsDtos, "Posts");
+
+                    //transaction.Commit();
+                    transaction.Rollback();
+                }
+            }
 
             return Ok();
         }
