@@ -209,8 +209,8 @@ namespace TestBulkProcssorApi.Controllers
                     // Call the save method on the Bulk Processor 
                     await _bulkProcessor.SaveAsync(postsDtos, "Posts");
 
-                    //transaction.Commit();
-                    transaction.Rollback();
+                    transaction.Commit();
+                    //transaction.Rollback();
                 }
             }
 
