@@ -2,7 +2,7 @@
 
 namespace BulkDataProcessorExamples.Mappings
 {
-    public class BlogDataTableMapping : DataTableMapping
+    public class BlogDataTableMapping : DataMapping
     {
         public override string SourceTableName => "BlogDataTable";
 

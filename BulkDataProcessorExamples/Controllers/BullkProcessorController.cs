@@ -8,7 +8,9 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Threading.Tasks;
+using FastMember;
 
 namespace TestBulkProcssorApi.Controllers
 {
@@ -214,6 +216,90 @@ namespace TestBulkProcssorApi.Controllers
                 }
             }
 
+            return Ok();
+        }
+        
+        [Route("SavePostsUsingDataReader")]
+        [HttpPost]
+        public async Task<IActionResult> SavePostsUsingDataReader(int items)
+        {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-domain-models-using-datareader");
+        
+            // Create a list of Post objects
+            var posts = new List<Post>();
+        
+            for (var i = 1; i <= items; i++)
+            {
+                var post = new Post
+                {
+                    Title = $"Title DataReader {i}",
+                    Content = $"Content DataReader {i}",
+                    BlogId = blog.Id
+                };
+        
+                posts.Add(post);
+            }
+        
+            // Use FastMember to create a data reader from the posts collection
+            using (var reader = ObjectReader.Create(posts, "Title", "Content", "BlogId"))
+            {
+                // Call the save method on the Bulk Processor using the data reader
+                await _bulkProcessor.SaveAsync(reader, "Posts");
+            }
+        
+            return Ok();
+        }
+        
+        [Route("SavePostsUsingJsonStream")]
+        [HttpPost]
+        public async Task<IActionResult> SavePostsUsingJsonStream(int items)
+        {
+            // Create a Blog and save it to the db using EF
+            var blog = await CreateBlog("http://blog-json-stream-test");
+        
+            // Create JSON content for posts
+            var jsonBuilder = new System.Text.StringBuilder();
+            jsonBuilder.Append(@"{
+                ""tableName"": ""Posts"",
+                ""columns"": [
+                    { ""name"": ""Title"", ""type"": ""string"" },
+                    { ""name"": ""Content"", ""type"": ""string"" },
+                    { ""name"": ""BlogId"", ""type"": ""int"" }
+                ],
+                ""data"": [");
+        
+            for (var i = 1; i <= items; i++)
+            {
+                if (i > 1)
+                    jsonBuilder.Append(",");
+        
+                jsonBuilder.Append(@"
+                    {
+                        ""Title"": ""JSON Stream Post " + i + @""",
+                        ""Content"": ""JSON Stream Content " + i + @""",
+                        ""BlogId"": " + blog.Id + @"
+                    }");
+            }
+        
+            jsonBuilder.Append(@"
+                ]
+            }");
+        
+            var jsonContent = jsonBuilder.ToString();
+        
+            // Convert JSON string to a stream
+            using (var stream = new MemoryStream())
+            await using (var writer = new StreamWriter(stream))
+            {
+                await writer.WriteAsync(jsonContent);
+                await writer.FlushAsync();
+                stream.Position = 0; // Reset stream position to beginning
+        
+                // Call the save method on the Bulk Processor using the JSON stream
+                await _bulkProcessor.SaveAsync(stream);
+            }
+        
             return Ok();
         }
 

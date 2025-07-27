@@ -2,7 +2,7 @@
 
 namespace BulkDataProcessorExamples.Mappings
 {
-    public class PostDataTableMapping : DataTableMapping
+    public class PostDataTableMapping : DataMapping
     {
         public override string SourceTableName => "PostDataTable";
 

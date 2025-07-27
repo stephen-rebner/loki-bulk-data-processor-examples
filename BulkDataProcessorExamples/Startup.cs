@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace BulkDataProcessorExamples
 {
@@ -23,8 +24,22 @@ namespace BulkDataProcessorExamples
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddLokiBulkDataProcessor(Configuration.GetConnectionString("BlogsDb"), Assembly.GetExecutingAssembly());
-            services.AddDbContext<BlogDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("BlogsDb")));
+            
+            // Add file logging
+            // Create a logger factory for the bulk processor
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddFile("Logs/bulkprocessor-{Date}.txt", fileSizeLimitBytes: 10 * 1024 * 1024);
+            });
+            
+            // Pass the logger to the bulk data processor
+            services.AddLokiBulkDataProcessor(
+                Configuration.GetConnectionString("BlogsDb"), 
+                Assembly.GetExecutingAssembly(),
+                loggerFactory);
+                
+            services.AddDbContext<BlogDbContext>(options => 
+                options.UseSqlServer(Configuration.GetConnectionString("BlogsDb")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -6,6 +6,31 @@
 	},
 	"item": [
 		{
+			"name": "SavePostsUsingDataReader",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:44306/SavePostsUsingDataReader?items=1000",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "44306",
+					"path": [
+						"SavePostsUsingDataReader"
+					],
+					"query": [
+						{
+							"key": "items",
+							"value": "1000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "SavePostModels",
 			"request": {
 				"method": "POST",
@@ -179,6 +204,31 @@
 				}
 			},
 			"response": []
+		},
+		{
+		   "name": "SavePostsUsingJsonStream",
+		   "request": {
+		    "method": "POST",
+		    "header": [],
+		    "url": {
+		     "raw": "https://localhost:44306/SavePostsUsingJsonStream?items=1000",
+		     "protocol": "https",
+		     "host": [
+		      "localhost"
+		     ],
+		     "port": "44306",
+		     "path": [
+		      "SavePostsUsingJsonStream"
+		     ],
+		     "query": [
+		      {
+		       "key": "items",
+		       "value": "1000"
+		      }
+		     ]
+		    }
+		   },
+		   "response": []
 		}
 	],
 	"protocolProfileBehavior": {}
